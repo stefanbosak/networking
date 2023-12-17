@@ -1,0 +1,11 @@
+$TTL	1D
+@							IN	SOA	localhost. . (
+										2021022401	; serial
+										30m		; refresh
+										15m		; retry
+										1W		; expiry
+										1D		; minimum
+									)
+									NS		localhost.
+									PTR		localhost.
+*									PTR		localhost.

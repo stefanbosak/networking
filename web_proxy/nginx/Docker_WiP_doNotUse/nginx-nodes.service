@@ -1,0 +1,14 @@
+# Systemd for nginx nodes
+# =======================
+#
+[Unit]
+Description=Manage containerized high performance reverse proxy server nodes
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/run_nginx_nodes.sh start
+ExecStop=/usr/local/bin/run_nginx_nodes.sh stop
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

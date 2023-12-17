@@ -1,0 +1,13 @@
+$TTL 1D
+$ORIGIN localhost.
+@       IN      SOA     localhost. .  (
+                                      2021022401 ; Serial
+                                      30m        ; Refresh
+                                      15m        ; Retry
+                                      1W         ; Expire - 1 week
+                                      1D )       ; Minimum
+		IN      NS      localhost.
+		IN		A		127.0.0.1
+		IN		AAAA		::1
+*		IN		A		127.0.0.1		
+*		IN		AAAA		::1

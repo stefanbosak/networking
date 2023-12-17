@@ -1,0 +1,170 @@
+// https://bind9.readthedocs.io/en/v9_17_8/reference.html
+server ::1 {
+  edns yes;
+  tcp-only yes;
+};
+
+server 127.0.0.1 {
+  edns yes;
+  tcp-only yes;
+};
+
+// not working TLS validity issues
+tls cloudflare-tls {
+  session-tickets no;
+  protocols { "TLSv1.3"; };
+  prefer-server-ciphers yes;
+  ciphers "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384";
+  dhparam-file "/etc/bind/tls/dhparam.pem";
+  remote-hostname "one.one.one.one";
+  // openssl x509 -in /etc/bind/tls/cloudflare.crt -text
+  // openssl s_client -connect 1.1.1.1:853 -servername 1.1.1.1 -showcerts | sed -n '/BEGIN CERTIFICATE/,/END CERTIFICATE/p' > /etc/bind/tls/cloudflare.crt
+  ca-file "/etc/bind/tls/cloudflare.crt";
+};
+
+// not working TLS validity issues
+tls quad9-tls {
+  session-tickets no;
+  protocols { "TLSv1.3"; };
+  prefer-server-ciphers yes;
+  ciphers "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384";
+  dhparam-file "/etc/bind/tls/dhparam.pem";
+  remote-hostname "dns11.quad9.net";
+  // openssl x509 -in /etc/bind/tls/quad9.crt -text
+  // openssl s_client -connect 9.9.9.11:853 -servername 9.9.9.11 -showcerts | sed -n '/BEGIN CERTIFICATE/,/END CERTIFICATE/p' > /etc/bind/tls/quad9.crt
+  ca-file "/etc/bind/tls/quad9.crt";
+};
+
+// working as expected, opendns no support for DNSSEC
+tls opendns-tls {
+  session-tickets no;
+  protocols { "TLSv1.3"; };
+  prefer-server-ciphers yes;
+  ciphers "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384";
+  dhparam-file "/etc/bind/tls/dhparam.pem";
+  remote-hostname "dns.opendns.com";
+  // openssl x509 -in /etc/bind/tls/opendns.crt -text
+  // openssl s_client -connect 208.67.222.222:853 -servername 208.67.222.222 -showcerts | sed -n '/BEGIN CERTIFICATE/,/END CERTIFICATE/p' > /etc/bind/tls/opendns.crt
+  ca-file "/etc/bind/tls/opendns.crt";
+};
+
+// local covered via Letsencrypt
+tls local-tls {
+  key-file "/etc/bind/tls/localhost.key";
+  cert-file "/etc/bind/tls/localhost.crt";
+};
+
+http local-http-server {
+  endpoints { "/dns-query"; };
+};
+
+options {
+  hostname "null";
+  version "not disclosed";
+  directory "/var/lib/bind/";
+  pid-file "/run/named/named.pid";
+  managed-keys-directory "/var/cache/bind";
+  bindkeys-file "/etc/bind/bind.keys";
+
+  tls-port 853;
+  https-port 8443;
+
+  listen-on port 53 {
+    localhost_ipv4;
+  };
+  listen-on port 853 tls local-tls {
+    localhost_ipv4;
+  };
+  listen-on port 8443 tls local-tls http local-http-server {
+    localhost_ipv4;
+  };
+  listen-on-v6 port 53 {
+    localhost_ipv6;
+  };
+  listen-on-v6 port 853 tls local-tls {
+    localhost_ipv6;
+  };
+  listen-on-v6 port 8443 tls local-tls http local-http-server {
+    localhost_ipv6;
+  };
+  recursion no;
+  recursive-clients 500;
+
+  allow-query { none; };
+  allow-query-on { none; };
+  allow-query-cache { none; };
+  allow-query-cache-on { none; };
+  allow-recursion { none; };
+  allow-recursion-on { none; };
+  allow-notify { none; };
+  allow-transfer { none; };
+  allow-update { none; };
+  allow-update-forwarding { none; };
+  
+  // IP filter - prevent DNS rebinding attacks
+  deny-answer-addresses {
+    any;
+  };
+  // filter for aliases - prevent DNS rebinding attacks
+  deny-answer-aliases {
+    any;
+  };
+
+  // filter - queries from listed addresses will not be responded to or will not be used to resolve a query
+  blackhole {
+    !localhost_ipv6;
+    !localhost_ipv4;
+    224.0.0.0/4;
+    240.0.0.0/4;
+    0.0.0.0/8;
+    10.0.0.0/8;
+    127.0.0.0/8;
+    100.64.0.0/10;
+    172.16.0.0/12;
+    198.18.0.0/15;
+    169.254.0.0/16;
+    192.168.0.0/16;
+    192.0.0.0/24;
+    192.0.2.0/24;
+    192.52.193.0/24;
+    198.51.100.0/24;
+    203.0.113.0/24;
+    192.0.0.0/29;
+    192.0.0.8/32;
+    192.0.0.10/32;
+    192.0.0.170/32;
+    192.0.0.171/32;   
+    255.255.255.255/32;
+    fc00::/7;
+    ff00::/8;
+    fe80::/10;
+    2001:10::/28;
+    2001:20::/28;
+    2001:3::/32;
+    2001:db8::/32;
+    2001:2::/48;    
+    ::ffff:0:0/96;
+    64:ff9b::/96;
+    100::/64;
+    ::/128;
+    ::1/128;
+  };
+
+  rate-limit {
+    responses-per-second 10;
+    log-only yes;
+  };
+
+  prefetch 0;
+  automatic-interface-scan no;
+  fetches-per-zone 100;
+  fetches-per-server 100;
+  fetch-quota-params 50 0.1 0.3 0.7;
+  tcp-listen-queue 0;
+  interface-interval 0;
+  transfers-per-ns 24;
+  transfers-in 64;
+  transfers-out 0;
+  max-cache-size 512m;
+  flush-zones-on-shutdown yes;
+};

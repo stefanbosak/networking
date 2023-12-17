@@ -1,0 +1,25 @@
+# Systemd for nginx
+# =================
+#
+[Unit]
+Description=Containerized high performance reverse proxy server, node %i
+#Requires=nginx-nodes.service
+#Before=nginx-nodes.service
+#BindsTo=nginx-nodes.service
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=exec
+TimeoutStartSec=0
+Environment=NAME=nginx_%i
+ExecStartPre=-/usr/local/bin/stop_nginx_node.sh
+ExecStartPre=/usr/local/bin/exec_nginx_node.sh /usr/sbin/nginx -c /etc/nginx/nginx-node%i.conf -t -q
+ExecStart=/usr/local/bin/run_nginx_node.sh -c /etc/nginx/nginx-node%i.conf
+ExecReload=/usr/local/bin/exec_nginx_node.sh /usr/sbin/nginx -c /etc/nginx/nginx-node%i.conf -s reload
+ExecStop=/usr/local/bin/stop_nginx_node.sh
+TimeoutStopSec=5
+KillMode=mixed
+
+[Install]
+WantedBy=nginx-nodes.service

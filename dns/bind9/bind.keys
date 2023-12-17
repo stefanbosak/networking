@@ -1,0 +1,3 @@
+// hint: for i in $(cat bind.list); do dig +nocomments +nostats +nocmd +noquestion -t dnskey $i | grep "257 3 8" | sed "s/.*DNSKEY/${i} initial-key/g"; done | sort | uniq | sed 's/$/";/g;s/8 A/8 \"/g'
+trust-anchors {
+};

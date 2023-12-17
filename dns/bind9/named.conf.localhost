@@ -1,0 +1,2859 @@
+acl "recursion-localhost" {
+  localhost_ipv6;
+  localhost_ipv4;
+};
+
+acl "recursion-on-localhost" {
+  localhost_ipv6;
+  localhost_ipv4;
+};
+
+acl "notify-localhost" {
+  none;
+};
+
+acl "transfer-localhost" {
+  none;
+};
+
+acl "update-localhost" {
+  none;
+};
+
+acl "update-forwarding-localhost" {
+  none;
+};
+
+acl "query-localhost" {
+  localhost_ipv6;
+  localhost_ipv4;
+};
+
+acl "query-on-localhost" {
+  localhost_ipv6;
+  localhost_ipv4;
+};
+
+view "localhost" {
+  //plugin query "/usr/lib/x86_64-linux-gnu/bind/filter-aaaa.so" {
+  //  filter-aaaa-on-v4 yes;
+  //  filter-aaaa-on-v6 yes;
+  //  filter-aaaa { any; };
+  //};
+
+  match-clients {
+    query-localhost;
+  };
+  match-destinations {
+    localhost_ipv6;
+    localhost_ipv4;
+  };
+  recursion yes;
+  match-recursive-only yes;
+
+  min-retry-time 1;
+  min-refresh-time 1;
+  lame-ttl 0;
+  servfail-ttl 0;
+  min-ncache-ttl 30;
+  max-ncache-ttl 60;
+  min-cache-ttl 30;
+  max-cache-ttl 60;
+  max-stale-ttl 1;
+  max-cache-size 512m;
+  minimal-any yes;
+  minimal-responses yes;
+  qname-minimization relaxed;
+  ixfr-from-differences yes;
+  provide-ixfr yes;
+  transfer-format many-answers;
+  zone-statistics no;
+  max-recursion-queries 30;
+  edns-udp-size 1232;
+  max-udp-size 1232;
+
+  dnssec-validation yes;
+
+  allow-query { query-localhost; };
+  allow-query-on { query-on-localhost; };
+  allow-query-cache { query-localhost; };
+  allow-query-cache-on { query-on-localhost; };
+  allow-recursion { recursion-localhost; };
+  allow-recursion-on { recursion-on-localhost; };
+  allow-notify { notify-localhost; };
+  allow-transfer { transfer-localhost; };
+  allow-update { update-localhost; };
+  allow-update-forwarding { update-forwarding-localhost; };
+
+  // IP filter - prevent DNS rebinding attacks
+  deny-answer-addresses {
+    !localhost_ipv6;
+    !localhost_ipv4;
+    224.0.0.0/4;
+    240.0.0.0/4;
+    0.0.0.0/8;
+    10.0.0.0/8;
+    127.0.0.0/8;
+    100.64.0.0/10;
+    172.16.0.0/12;
+    198.18.0.0/15;
+    192.168.0.0/16;
+    169.254.0.0/16;
+    192.0.0.0/24;
+    192.0.2.0/24;
+    192.52.193.0/24;
+    198.51.100.0/24;
+    203.0.113.0/24;
+    192.0.0.0/29;
+    192.0.0.8/32;
+    192.0.0.10/32;
+    192.0.0.170/32;
+    192.0.0.171/32;
+    255.255.255.255/32;
+    fc00::/7;
+    ff00::/8;
+    fe80::/10;
+    2001:10::/28;
+    2001:20::/28;
+    2001:3::/32;
+    2001:db8::/32;
+    2001:2::/48;
+    ::ffff:0:0/96;
+    64:ff9b::/96;
+    100::/64;
+    ::/128;
+    ::1/128;
+  };
+
+  // filter for aliases - prevent DNS rebinding attacks
+  deny-answer-aliases {
+    any;
+  };
+
+  forwarders port 853 {
+    2620:119:35::35 port 853 tls opendns-tls;
+    2620:119:53::53 port 853 tls opendns-tls;
+    208.67.222.222 port 853 tls opendns-tls;
+    208.67.220.220 port 853 tls opendns-tls;
+    //2620:fe::11 port 853 tls quad9-tls;
+    //2620:fe::fe:11 port 853 tls quad9-tls;
+    //9.9.9.11 port 853 tls quad9-tls;
+    //149.112.112.11 port 853 tls quad9-tls;
+    //1.1.1.1 port 853 tls cloudflare-tls;
+  };
+  forward only;
+
+  empty-zones-enable no;
+
+  // IPv4 Special-Purpose Address Registry (ordered by size)
+
+  // 240.0.0.0/4
+  // [RFC1112] - Reserved
+  // @master
+  disable-empty-zone "240.in-addr.arpa";
+  disable-empty-zone "241.in-addr.arpa";  
+  disable-empty-zone "242.in-addr.arpa";
+  disable-empty-zone "243.in-addr.arpa";
+  disable-empty-zone "244.in-addr.arpa";
+  disable-empty-zone "245.in-addr.arpa";
+  disable-empty-zone "246.in-addr.arpa";
+  disable-empty-zone "247.in-addr.arpa";
+  disable-empty-zone "248.in-addr.arpa";
+  disable-empty-zone "249.in-addr.arpa";
+  disable-empty-zone "250.in-addr.arpa";
+  disable-empty-zone "251.in-addr.arpa";  
+  disable-empty-zone "252.in-addr.arpa";
+  disable-empty-zone "253.in-addr.arpa";
+  disable-empty-zone "254.in-addr.arpa";
+  disable-empty-zone "255.in-addr.arpa";
+  
+  // <224; 239>.0.0.0/8
+  // [RFC3171] - Multicast
+  // @mirror
+  disable-empty-zone "224.in-addr.arpa";
+  disable-empty-zone "225.in-addr.arpa";
+  disable-empty-zone "226.in-addr.arpa";
+  disable-empty-zone "227.in-addr.arpa";
+  disable-empty-zone "228.in-addr.arpa";
+  disable-empty-zone "229.in-addr.arpa";
+  disable-empty-zone "230.in-addr.arpa";
+  disable-empty-zone "231.in-addr.arpa";
+  disable-empty-zone "232.in-addr.arpa";
+  disable-empty-zone "233.in-addr.arpa";
+  disable-empty-zone "234.in-addr.arpa";
+  disable-empty-zone "235.in-addr.arpa";
+  disable-empty-zone "236.in-addr.arpa";
+  disable-empty-zone "237.in-addr.arpa";
+  disable-empty-zone "238.in-addr.arpa";
+  disable-empty-zone "239.in-addr.arpa";
+
+  // 0.0.0.0/8
+  // [RFC1122] - Local Identification (This host on this network)
+  // @master
+  disable-empty-zone "0.in-addr.arpa";
+
+  // 10.0.0.0/8
+  // [RFC1918] - Private Use
+  // @master
+  disable-empty-zone "10.in-addr.arpa";
+
+  // 127.0.0.0/8
+  // [RFC1122] - Loopback
+  // @master
+  disable-empty-zone "127.in-addr.arpa";
+
+  // 100.64.0.0/10
+  // [RFC6598] - Shared Address Space
+  // @master
+  disable-empty-zone "64.100.in-addr.arpa";
+  disable-empty-zone "65.100.in-addr.arpa";
+  disable-empty-zone "66.100.in-addr.arpa";
+  disable-empty-zone "67.100.in-addr.arpa";
+  disable-empty-zone "68.100.in-addr.arpa";
+  disable-empty-zone "69.100.in-addr.arpa";
+  disable-empty-zone "70.100.in-addr.arpa";
+  disable-empty-zone "71.100.in-addr.arpa";
+  disable-empty-zone "72.100.in-addr.arpa";
+  disable-empty-zone "73.100.in-addr.arpa";
+  disable-empty-zone "74.100.in-addr.arpa";
+  disable-empty-zone "75.100.in-addr.arpa";
+  disable-empty-zone "76.100.in-addr.arpa";
+  disable-empty-zone "77.100.in-addr.arpa";
+  disable-empty-zone "78.100.in-addr.arpa";
+  disable-empty-zone "79.100.in-addr.arpa";
+  disable-empty-zone "80.100.in-addr.arpa";
+  disable-empty-zone "81.100.in-addr.arpa";
+  disable-empty-zone "82.100.in-addr.arpa";
+  disable-empty-zone "83.100.in-addr.arpa";
+  disable-empty-zone "84.100.in-addr.arpa";
+  disable-empty-zone "85.100.in-addr.arpa";
+  disable-empty-zone "86.100.in-addr.arpa";
+  disable-empty-zone "87.100.in-addr.arpa";
+  disable-empty-zone "88.100.in-addr.arpa";
+  disable-empty-zone "89.100.in-addr.arpa";
+  disable-empty-zone "90.100.in-addr.arpa";
+  disable-empty-zone "91.100.in-addr.arpa";
+  disable-empty-zone "92.100.in-addr.arpa";
+  disable-empty-zone "93.100.in-addr.arpa";
+  disable-empty-zone "94.100.in-addr.arpa";
+  disable-empty-zone "95.100.in-addr.arpa";
+  disable-empty-zone "96.100.in-addr.arpa";
+  disable-empty-zone "97.100.in-addr.arpa";
+  disable-empty-zone "98.100.in-addr.arpa";
+  disable-empty-zone "99.100.in-addr.arpa";
+  disable-empty-zone "100.100.in-addr.arpa";
+  disable-empty-zone "101.100.in-addr.arpa";
+  disable-empty-zone "102.100.in-addr.arpa";
+  disable-empty-zone "103.100.in-addr.arpa";
+  disable-empty-zone "104.100.in-addr.arpa";
+  disable-empty-zone "105.100.in-addr.arpa";
+  disable-empty-zone "106.100.in-addr.arpa";
+  disable-empty-zone "107.100.in-addr.arpa";
+  disable-empty-zone "108.100.in-addr.arpa";
+  disable-empty-zone "109.100.in-addr.arpa";
+  disable-empty-zone "110.100.in-addr.arpa";
+  disable-empty-zone "111.100.in-addr.arpa";
+  disable-empty-zone "112.100.in-addr.arpa";
+  disable-empty-zone "113.100.in-addr.arpa";
+  disable-empty-zone "114.100.in-addr.arpa";
+  disable-empty-zone "115.100.in-addr.arpa";
+  disable-empty-zone "116.100.in-addr.arpa";
+  disable-empty-zone "117.100.in-addr.arpa";
+  disable-empty-zone "118.100.in-addr.arpa";
+  disable-empty-zone "119.100.in-addr.arpa";
+  disable-empty-zone "120.100.in-addr.arpa";
+  disable-empty-zone "121.100.in-addr.arpa";
+  disable-empty-zone "122.100.in-addr.arpa";
+  disable-empty-zone "123.100.in-addr.arpa";
+  disable-empty-zone "124.100.in-addr.arpa";
+  disable-empty-zone "125.100.in-addr.arpa";
+  disable-empty-zone "126.100.in-addr.arpa";
+  disable-empty-zone "127.100.in-addr.arpa";  
+  
+  // 172.16.0.0/12
+  // [RFC1918] -  Private Use
+  // @master
+  disable-empty-zone "16.172.in-addr.arpa";
+  disable-empty-zone "17.172.in-addr.arpa";
+  disable-empty-zone "18.172.in-addr.arpa";
+  disable-empty-zone "19.172.in-addr.arpa";
+  disable-empty-zone "20.172.in-addr.arpa";
+  disable-empty-zone "21.172.in-addr.arpa";
+  disable-empty-zone "22.172.in-addr.arpa";
+  disable-empty-zone "23.172.in-addr.arpa";
+  disable-empty-zone "24.172.in-addr.arpa";
+  disable-empty-zone "25.172.in-addr.arpa";
+  disable-empty-zone "26.172.in-addr.arpa";
+  disable-empty-zone "27.172.in-addr.arpa";
+  disable-empty-zone "28.172.in-addr.arpa";
+  disable-empty-zone "29.172.in-addr.arpa";
+  disable-empty-zone "30.172.in-addr.arpa";
+  disable-empty-zone "31.172.in-addr.arpa";
+
+  // 198.18.0.0/15
+  // [RFC2544] - Benchmarking
+  // @master
+  disable-empty-zone "18.198.in-addr.arpa";
+  disable-empty-zone "19.198.in-addr.arpa";
+
+  // 169.254.0.0/16
+  // [RFC 3927] - Link local
+  // @master
+  disable-empty-zone "254.169.in-addr.arpa";
+
+  // 192.168.0.0/16
+  // [RFC1918] - Private Use
+  // @master
+  disable-empty-zone "168.192.in-addr.arpa";
+  
+  // 192.0.0.0/24
+  // [RFC6890] - IETF Protocol Assignments
+  // @master
+  disable-empty-zone "0.0.192.in-addr.arpa";
+
+  // 192.0.2.0/24
+  // [RFC5737] - Documentation
+  // @master
+  disable-empty-zone "2.0.192.in-addr.arpa";
+
+  // 192.31.196.0/24
+  // [RFC7535] - AS112-v4
+  // @master
+  disable-empty-zone "196.31.192.in-addr.arpa";
+  
+  // 192.52.193.0/24
+  // [RFC7450] - AMT
+  // @master
+  disable-empty-zone "193.52.192.in-addr.arpa";
+
+  // 192.88.99.0/24
+  // [RFC7526] - Deprecated (6to4 Relay Anycast)
+  // @master
+  disable-empty-zone "99.88.192.in-addr.arpa";
+
+  // 192.175.48.0/24
+  // [RFC7534] - Direct Delegation AS112 Service
+  // @master
+  disable-empty-zone "48.175.192.in-addr.arpa";  
+
+  // 198.51.100.0/24
+  // [RFC5737] - Documentation
+  // @master
+  disable-empty-zone "100.51.198.in-addr.arpa";
+
+  // 203.0.113.0/24
+  // [RFC5737] - Documentation
+  // @master
+  disable-empty-zone "113.0.203.in-addr.arpa";
+
+  // 192.0.0.0/29
+  // [RFC7335] - IPv4 Service Continuity Prefix
+  // @nozone
+  //disable-empty-zone "0-29.0.192.in-addr.arpa";
+  
+  // 192.0.0.8/32   
+  // [RFC7600] - IPv4 dummy address
+  // @nozone
+  //disable-empty-zone "0-32.0.192.in-addr.arpa";
+
+  // 192.0.0.9/32
+  // [RFC7723]- Port Control Protocol Anycast
+  // @nozone
+  //disable-empty-zone "0-32.0.192.in-addr.arpa";
+  
+  // 192.0.0.10/32
+  // [RFC8155] - Traversal Using Relays around NAT Anycast
+  // @nozone
+  //disable-empty-zone "0-32.0.192.in-addr.arpa";
+
+  // 192.0.0.<170;171>/32 
+  // [RFC8880][RFC7050] - NAT64/DNS64 Discovery
+  // @nozone
+  //disable-empty-zone "0-32.0.192.in-addr.arpa";
+
+  // 255.255.255.255/32
+  // [RFC6303] - Limited Broadcast
+  // @nozone
+  //disable-empty-zone "0-32.255.255.255.in-addr.arpa";
+
+  // [RFC 4291] - Unspecified address
+  disable-empty-zone "0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa";
+  disable-empty-zone "1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa";
+
+  // IPv4-mapped addresses
+  disable-empty-zone "f.f.f.f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa";
+  disable-empty-zone "0.0.ip6.arpa";
+
+  // [RFC4048]
+  disable-empty-zone "2.0.ip6.arpa";
+
+  // [RFC4291] - IP Version 6 Addressing Architecture
+  disable-empty-zone "1.ip6.arpa";
+  disable-empty-zone "4.ip6.arpa";
+  disable-empty-zone "6.ip6.arpa";
+  disable-empty-zone "8.ip6.arpa";
+  disable-empty-zone "a.ip6.arpa";
+  disable-empty-zone "c.ip6.arpa";
+  disable-empty-zone "e.ip6.arpa";
+  disable-empty-zone "f.ip6.arpa";
+  disable-empty-zone "1.0.ip6.arpa";
+  disable-empty-zone "4.0.ip6.arpa";
+  disable-empty-zone "8.0.ip6.arpa";
+  disable-empty-zone "8.f.ip6.arpa";
+  disable-empty-zone "e.f.ip6.arpa";
+
+  // Multicast
+  disable-empty-zone "f.f.ip6.arpa";
+
+  disable-empty-zone "8.e.f.ip6.arpa";
+  disable-empty-zone "9.e.f.ip6.arpa";
+  disable-empty-zone "a.e.f.ip6.arpa";
+  disable-empty-zone "b.e.f.ip6.arpa";
+  disable-empty-zone "d.e.f.ip6.arpa";
+  disable-empty-zone "e.e.f.ip6.arpa";
+  disable-empty-zone "f.e.f.ip6.arpa";
+
+  // [RFC4193] - Unique-Local
+  disable-empty-zone "c.f.ip6.arpa";
+  disable-empty-zone "d.f.ip6.arpa";
+
+  // [RFC3879] - Deprecating Site Local Addresses
+  disable-empty-zone "c.e.f.ip6.arpa";
+
+  // [RFC4843] - Overlay Routable Cryptographic Hash IDentifiers
+  disable-empty-zone "1.0.0.1.0.0.2.ip6.arpa";
+
+  // [RFC4380]- Teredo
+  disable-empty-zone "0.0.0.0.1.0.0.2.ip6.arpa";
+
+  // [RFC3849] - Documentation Prefix
+  disable-empty-zone "8.b.d.0.1.0.0.2.ip6.arpa";
+
+  // [RFC5180] - IPv6 Benchmarking Methodology for Network Interconnect Devices
+  disable-empty-zone "0.0.0.0.2.0.0.0.1.0.0.2.ip6.arpa";
+
+  // [RFC6052] - IPv6 Addressing of IPv4/IPv6 Translators
+  disable-empty-zone "0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.b.9.f.f.4.6.0.0.ip6.arpa";
+
+  // [RFC3056]- 6to4
+  disable-empty-zone "2.0.0.2.ip6.arpa";
+
+  // [RFC3701] - 6bone
+  disable-empty-zone "f.5.ip6.arpa";
+
+  // [RFC2471] - IPv6 Testing Address Allocation
+  disable-empty-zone "e.f.f.3.ip6.arpa";
+
+  // DNS firewall  
+  response-policy {
+    zone "rpz.local";
+  } qname-wait-recurse no;
+
+  zone "rpz.local" {
+    type master;
+    file "/etc/bind/empty/rpz.local.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  
+  zone "localhost" {
+    type master;
+    file "/etc/bind/empty/localhost.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  // 240.0.0.0/4
+  // [RFC1112] - Reserved
+  // as master zone
+  zone "240.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/240.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "241.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/241.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "242.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/242.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "243.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/243.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "244.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/244.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "245.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/245.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "246.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/246.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "247.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/247.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "248.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/248.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "250.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/250.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "251.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/251.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "252.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/252.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "253.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/253.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "254.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/254.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "255.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/255.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  // <224; 239>.0.0.0/8
+  // [RFC3171] - Multicast
+  // as mirror zone
+  zone "224.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/224.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "225.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/225.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "226.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/226.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "227.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/227.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "228.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/228.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "229.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/229.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "230.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/230.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "231.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/231.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "232.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/232.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "233.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/233.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "234.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/234.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "235.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/235.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "236.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/236.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "237.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/237.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "238.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/238.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  zone "239.in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/239.in-addr.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+
+  // 0.0.0.0/8
+  // [RFC1122] - Local Identification (This host on this network)
+  zone "0.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/0.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  // 10.0.0.0/8
+  // [RFC1918] - Private Use 
+  zone "10.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/10.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+
+  // 127.0.0.0/8
+  // [RFC1122] - Loopback
+  zone "127.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/127.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  // 100.64.0.0/10
+  // [RFC6598] - Shared Address Space
+  zone "64.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/64.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "65.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/65.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "66.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/66.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "67.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/67.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "68.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/68.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "69.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/69.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "70.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/70.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "71.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/71.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "72.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/72.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "73.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/73.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "74.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/74.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "75.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/75.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "76.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/76.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "77.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/77.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "78.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/78.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "79.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/79.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "80.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/80.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "81.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/81.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "82.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/82.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "83.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/83.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "84.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/84.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "85.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/85.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "86.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/86.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "87.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/87.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "88.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/88.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "89.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/89.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "90.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/90.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "91.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/91.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "92.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/92.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "93.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/93.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "94.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/94.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "95.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/95.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "96.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/96.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "97.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/97.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "98.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/98.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "99.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/99.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "100.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/100.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "101.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/101.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "102.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/102.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "103.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/103.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "104.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/104.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "105.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/105.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "106.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/106.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "107.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/107.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "108.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/108.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "109.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/109.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "110.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/110.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "111.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/111.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "112.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/112.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "113.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/113.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "114.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/114.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "115.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/115.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "116.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/116.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "117.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/117.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "118.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/118.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "119.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/119.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "120.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/120.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "121.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/121.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "122.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/122.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "123.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/123.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "124.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/124.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "125.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/125.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "126.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/126.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "127.100.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/127.100.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  // 172.16.0.0/12
+  // [RFC1918] - Private Use 
+  zone "16.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/16.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "17.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/17.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "18.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/18.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "19.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/19.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "20.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/20.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "21.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/21.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "22.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/22.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "23.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/23.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "24.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/24.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "25.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/25.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "26.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/26.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "27.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/27.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "28.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/28.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "29.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/29.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "30.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/30.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+  zone "31.172.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/31.172.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+
+  // 198.18.0.0/15
+  // [RFC2544] - Benchmarking
+  zone "18.198.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/18.198.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "19.198.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/19.198.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  // 169.254.0.0/16
+  // [RFC 3927] - Link local
+  zone "254.169.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/254.169.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+
+  // 192.168.0.0/16
+  // [RFC1918] - Private Use 
+  zone "168.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/168.192.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    notify no;
+  };
+
+  // 192.0.0.0/24
+  // [RFC6890] - IETF Protocol Assignments
+  zone "0.0.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/0.0.192.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  // 192.0.2.0/24
+  // [RFC5737] - Documentation 
+  zone "2.0.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/2.0.192.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  
+  // 192.31.196.0/24
+  // [RFC7535] - AS112-v4  
+  zone "196.31.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/196.31.192.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+ 
+  // 192.52.193.0/24
+  // [RFC7450] - AMT 
+  zone "193.52.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/193.52.192.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  // 192.88.99.0/24
+  // [RFC7526] - Deprecated (6to4 Relay Anycast)
+  zone "99.88.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/99.88.192.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  // 192.175.48.0/24
+  // [RFC7534] - Direct Delegation AS112 Service
+  zone "48.175.192.in-addr.arpa" { 
+    type master;
+    file "/etc/bind/empty/48.175.192.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+ 
+  // 198.51.100.0/24
+  // [RFC5737] - Documentation
+  zone "100.51.198.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/100.51.198.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  
+  // 203.0.113.0/24
+  // [RFC5737] - Documentation  
+  zone "113.0.203.in-addr.arpa" {
+    type master;
+    file "/etc/bind/empty/113.0.203.in-addr.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  // 192.0.0.0/29
+  // [RFC7335] - IPv4 Service Continuity Prefix
+  //zone "0-29.0.192.in-addr.arpa" {};
+  
+  // 192.0.0.8/32
+  // [RFC7600] - IPv4 dummy address
+  //zone "0-32.0.192.in-addr.arpa" {};
+
+  // 192.0.0.9/32
+  // [RFC7723]- Port Control Protocol Anycast
+  //zone "0-32.0.192.in-addr.arpa" {};
+  
+  // 192.0.0.10/32
+  // [RFC8155] - Traversal Using Relays around NAT Anycast
+  //zone "0-32.0.192.in-addr.arpa" {};
+
+  // 192.0.0.<170;171>/32 
+  // [RFC8880][RFC7050] - NAT64/DNS64 Discovery
+  //zone "0-32.0.192.in-addr.arpa" {};
+
+  // 255.255.255.255/32
+  // [RFC6303] - Limited Broadcast
+  //zone "0-32.255.255.255.in-addr.arpa" {};
+ 
+ 
+  zone "1.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/1.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "4.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/4.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "6.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/6.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "8.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/8.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "a.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/a.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "c.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/c.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "e.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/e.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  zone "0.0.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/0.0.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "1.0.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/1.0.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "2.0.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/2.0.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "4.0.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/4.0.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "8.0.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/8.0.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "8.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/8.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "c.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/c.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "d.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/d.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  zone "e.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/e.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "f.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/f.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  zone "8.e.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/8.e.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "9.e.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/9.e.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "a.e.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/a.e.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "b.e.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/b.e.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  zone "c.e.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/c.e.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  zone "d.e.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/d.e.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "e.e.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/e.e.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "f.e.f.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/f.e.f.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  zone "8.b.d.0.1.0.0.2.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/8.b.d.0.1.0.0.2.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  zone "1.0.0.1.0.0.2.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/1.0.0.1.0.0.2.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  zone "0.0.0.0.2.0.0.0.1.0.0.2.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/0.0.0.0.2.0.0.0.1.0.0.2.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  zone "0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.b.9.f.f.4.6.0.0.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.b.9.f.f.4.6.0.0.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "f.f.f.f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/f.f.f.f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  zone "0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+
+  zone "2.0.0.2.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/2.0.0.2.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+  zone "f.5.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/f.5.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "e.f.f.3.ip6.arpa" {
+    type master;
+    file "/etc/bind/empty/e.f.f.3.ip6.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+
+
+  // [RFC8806] - Running a Root Server Local to a Resolver
+  // @mirror
+  zone "." {
+    type mirror;
+    file "/etc/bind/sec/root.zone";
+    masters {
+      2001:7fd::1; //k.root-servers.net.
+      193.0.14.129; //k.root-servers.net.
+      2001:500:2f::f; //f.root-servers.net.
+      192.5.5.241; //f.root-servers.net.
+      2001:500:2::c; //c.root-servers.net.
+      192.33.4.12; //c.root-servers.net.
+      //2001:500:200::b; // b.root-servers.net
+      //199.9.14.201; // b.root-servers.net
+      //2001:500:12::d0d; // g.root-servers.net
+      //192.112.36.4; // g.root-servers.net
+      2620:0:2830:202::132; // iad.xfr.dns.icann.org
+      192.0.47.132; // iad.xfr.dns.icann.org
+      //2620:0:2d0:202::132; // lax.xfr.dns.icann.org
+      //192.0.32.132; // lax.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+
+  // [RFC3172] - Reserved exclusively to support operationally-critical infrastructural identifier spaces as advised by the Internet Architecture Board
+  // @mirror
+  zone "arpa" {
+    type mirror;
+    file "/etc/bind/sec/arpa.zone";
+    masters {
+      2001:7fd::1; //k.root-servers.net.
+      193.0.14.129; //k.root-servers.net.
+      2001:500:2f::f; //f.root-servers.net.
+      192.5.5.241; //f.root-servers.net.
+      2001:500:2::c; //c.root-servers.net.
+      192.33.4.12; //c.root-servers.net.
+      //2001:500:200::b; // b.root-servers.net
+      //199.9.14.201; // b.root-servers.net
+      //2001:500:12::d0d; // g.root-servers.net
+      //192.112.36.4; // g.root-servers.net
+      2620:0:2830:202::132; // iad.xfr.dns.icann.org
+      192.0.47.132; // iad.xfr.dns.icann.org
+      //2620:0:2d0:202::132; // lax.xfr.dns.icann.org
+      //192.0.32.132; // lax.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+    
+  // [RFC6116]- For mapping E.164 numbers to Internet URIs
+  // @slave
+  zone "e164.arpa" {
+      type slave;
+      file "/etc/bind/sec/e164.arpa.zone";
+      masters {
+        2001:67c:e0::5; //PRI.AUTHDNS.RIPE.NET
+        193.0.9.5; //PRI.AUTHDNS.RIPE.NET
+      };
+      allow-notify { notify-localhost; };
+      allow-query { query-localhost; };
+      allow-query-on { query-on-localhost; };
+      allow-transfer { transfer-localhost; };
+      allow-update-forwarding { update-forwarding-localhost; };
+      notify no;
+  };
+  
+  // [RFC5855]- For hosting authoritative name servers for the in-addr.arpa domain
+  // @mirror
+  zone "in-addr-servers.arpa" {
+    type mirror;
+    file "/etc/bind/sec/in-addr-servers.arpa.zone";
+    masters {
+      2001:67c:e0::1; //F.IN-ADDR-SERVERS.ARPA
+      193.0.9.1; //F.IN-ADDR-SERVERS.ARPA
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+
+  // [RFC1035] - For mapping IPv4 addresses to Internet domain names
+  // @mirror
+  zone "in-addr.arpa" {
+    type mirror;
+    file "/etc/bind/sec/in-addr.arpa.zone";
+    masters {
+      2001:67c:e0::1; //F.IN-ADDR-SERVERS.ARPA
+      193.0.9.1; //F.IN-ADDR-SERVERS.ARPA
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+
+  // [RFC5855]- For hosting authoritative name servers for the ip6.arpa domain
+  // @mirror
+  zone "ip6-servers.arpa" {
+    type mirror;
+    file "/etc/bind/sec/ip6-servers.arpa.zone";
+    masters {
+      2001:67c:e0::2; //F.IP6-SERVERS.ARPA
+      193.0.9.2; //F.IP6-SERVERS.ARPA
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+
+  // [RFC3152] - For mapping IPv6 addresses to Internet domain names
+  // @mirror
+  /*
+  zone "ip6.arpa" {
+    type mirror;
+    file "/etc/bind/sec/ip6.arpa.zone";
+    masters {
+      2001:67c:e0::2; //F.IP6-SERVERS.ARPA
+      193.0.9.2; //F.IP6-SERVERS.ARPA
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  */
+  // [RFC3171] - Multicast
+  // @mirror
+  zone "mcast.net" {
+    type mirror;
+    file "/etc/bind/sec/mcast.net.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  
+  // [RFC7534] - AS112 Nameserver Operations
+  // @master
+  zone "empty.as112.arpa" {
+    type master;
+    file "/etc/bind/empty/empty.as112.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "hostname.as112.arpa" {
+    type master;
+    file "/etc/bind/empty/hostname.as112.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  zone "hostname.as112.net" {
+    type master;
+    file "/etc/bind/empty/hostname.as112.net.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  
+  // [RFC8375] - Special-Use Domain
+  // @master
+  zone "home.arpa" {
+    type master;
+    file "/etc/bind/empty/home.arpa.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+  
+  // replacement for hint.zone
+  // @slave (@mirror not possible missing DNSKEY for root-servers.net)
+  zone "root-servers.net" {
+    type slave;
+    file "/etc/bind/sec/root-servers.net.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    forwarders {};
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  
+  // [RFC8880] - Special Use Domain Name
+  // @slave (@mirror not possible missing DNSKEY for ipv4only.arpa)
+  zone "ipv4only.arpa" {
+    type slave;
+    file "/etc/bind/sec/ipv4only.arpa.zone";
+    masters {
+      2620:0:2830:202::132; //iad.xfr.dns.icann.org
+      192.0.47.132; //iad.xfr.dns.icann.org
+    };
+    forwarders {};
+    allow-notify { notify-localhost; };
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update-forwarding { update-forwarding-localhost; };
+    notify no;
+  };
+  
+  //
+  // SPECIAL CASES
+  //
+  /*
+  zone "o2tv.cz" {
+    type forward;
+    forwarders {
+      2a00:1028:100:102::61;
+      194.228.2.61;
+      2a00:1028:100:101::2;
+      194.228.2.1;
+    };
+    forward only;
+  };
+
+  zone "o2tv.sk" {
+    type forward;
+    forwarders {
+      2a00:1028:100:102::61;
+      194.228.2.61;
+      2a00:1028:100:101::2;
+      194.228.2.1;
+    };
+    forward only;
+  };
+  
+  zone "orange.sk" {
+    type forward;
+    forwarders {
+      213.151.200.31;
+      213.151.208.161;
+      213.151.208.162;
+      213.151.200.30;
+    };
+    forward only;
+  };
+
+  zone "gtm.orange.sk" {
+    type forward;
+    forwarders {
+      213.151.222.34;
+      85.237.225.250;
+    };
+    forward only;
+  };
+
+  zone "gmail.com" {
+    type forward;
+    forwarders {
+      2001:4860:4802:32::a;
+      216.239.32.10;
+      2001:4860:4802:36::a;
+      216.239.36.10;
+      2001:4860:4802:38::a;
+      216.239.38.10;
+    };
+    forward only;
+  };
+
+  zone "google.com" {
+    type forward;
+    forwarders {
+      2001:4860:4802:32::a;
+      216.239.32.10;
+      2001:4860:4802:36::a;
+      216.239.36.10;
+      2001:4860:4802:38::a;
+      216.239.38.10;
+    };
+    forward only;
+  };
+
+  zone "l.google.com" {
+    type forward;
+    forwarders {
+      2001:4860:4802:32::a;
+      216.239.32.10;
+      2001:4860:4802:36::a;
+      216.239.36.10;
+      2001:4860:4802:38::a;
+      216.239.38.10;
+    };
+    forward only;
+  };
+
+  zone "googleapis.com" {
+    type forward;
+    forwarders {
+      2001:4860:4802:32::a;
+      216.239.32.10;
+      2001:4860:4802:36::a;
+      216.239.36.10;
+      2001:4860:4802:38::a;
+      216.239.38.10;
+    };
+    forward only;
+  };
+
+  zone "googleusercontent.com" {
+    type forward;
+    forwarders {
+      2001:4860:4802:32::a;
+      216.239.32.10;
+      2001:4860:4802:36::a;
+      216.239.36.10;
+      2001:4860:4802:38::a;
+      216.239.38.10;
+    };
+    forward only;
+  };
+  
+  zone "googlevideo.com" {
+    type forward;
+    forwarders {
+      2001:4860:4802:32::a;
+      216.239.32.10;
+      2001:4860:4802:36::a;
+      216.239.36.10;
+      2001:4860:4802:38::a;
+      216.239.38.10;
+    };
+    forward only;
+  };
+  
+  zone "gstatic.com" {
+    type forward;
+    forwarders {
+      2001:4860:4802:32::a;
+      216.239.32.10;
+      2001:4860:4802:36::a;
+      216.239.36.10;
+      2001:4860:4802:38::a;
+      216.239.38.10;
+    };
+    forward only;
+  };
+
+  zone "gvt1.com" {
+    type forward;
+    forwarders {
+      2001:4860:4802:32::a;
+      216.239.32.10;
+      2001:4860:4802:36::a;
+      216.239.36.10;
+      2001:4860:4802:38::a;
+      216.239.38.10;
+    };
+    forward only;
+  };
+ 
+  zone "pki.goog" {
+    type forward;
+    forwarders {
+      2001:4860:4802:34::72;
+      216.239.34.114;
+      2001:4860:4802:32::72;
+      216.239.32.114;
+      2001:4860:4802:38::72;
+      216.239.38.114;
+   };
+    forward only;
+  };
+  
+  zone "youtube.com" {
+    type forward;
+    forwarders {
+      2001:4860:4802:32::a;
+      216.239.32.10;
+      2001:4860:4802:36::a;
+      216.239.36.10;
+      2001:4860:4802:38::a;
+      216.239.38.10;
+    };
+    forward only;
+  };
+
+  zone "c.youtube.com" {
+    type forward;
+    forwarders {
+      2001:4860:4802:32::a;
+      216.239.32.10;
+      2001:4860:4802:36::a;
+      216.239.36.10;
+      2001:4860:4802:38::a;
+      216.239.38.10;
+    };
+    forward only;
+  };
+  
+  zone "ytimg.com" {
+    type forward;
+    forwarders {
+      2001:4860:4802:32::a;
+      216.239.32.10;
+      2001:4860:4802:36::a;
+      216.239.36.10;
+      2001:4860:4802:38::a;
+      216.239.38.10;
+    };
+    forward only;
+  };
+
+  zone "facebook.com" {
+    type forward;
+    forwarders {
+      2a03:2880:f0fc:c:face:b00c:0:35;
+      129.134.30.12;
+      2a03:2880:f1fc:c:face:b00c:0:35;
+      185.89.218.12;
+    };
+    forward only;
+  };
+
+  zone "c10r.facebook.com" {
+    type forward;
+    forwarders {
+      2a03:2880:f0fc:b:face:b00c:0:99;
+      129.134.30.11;
+      2a03:2880:f1fc:b:face:b00c:0:99;
+      185.89.218.11;
+    };
+    forward only;
+  };
+  
+  zone "fbcdn.net" {
+    type forward;
+    forwarders {
+      2a03:2880:f0fc:c:face:b00c:0:35;
+      129.134.30.12;
+      2a03:2880:f1fc:c:face:b00c:0:35;
+      185.89.218.12;
+    };
+    forward only;
+  };
+
+  zone "fna.fbcdn.net" {
+    type forward;
+    forwarders {
+      2a03:2880:f0fc:b:face:b00c:0:99;
+      129.134.30.11;
+      2a03:2880:f1fc:b:face:b00c:0:99;
+      185.89.218.11;
+    };
+    forward only;
+  };
+
+  zone "xx.fbcdn.net" {
+    type forward;
+    forwarders {
+      2a03:2880:f0fc:b:face:b00c:0:99;
+      129.134.30.11;
+      2a03:2880:f1fc:b:face:b00c:0:99;
+      185.89.218.11;
+    };
+    forward only;
+  };
+
+  zone "startpage.com" {
+    type forward;
+    forwarders {
+      2a00:edc0:6259:7:1::2;
+      198.51.45.1;
+      2a00:edc0:6259:7:1::4;
+      198.51.45.65;
+    };
+    forward only;
+  };
+
+  zone "mozilla.com" {
+    type forward;
+    forwarders {
+      2600:1401:2::f0;
+      193.108.91.240;
+    };
+    forward only;
+  };
+
+  zone "services.mozilla.com" {
+    type forward;
+    forwarders {
+      2600:9000:5302:a700::1;
+      205.251.194.167;
+      2600:9000:5306:7700::1;
+      205.251.198.119;
+    };
+    forward only;
+  };
+
+  zone "settings.services.mozilla.com" {
+    type forward;
+    forwarders {
+      2600:9000:5303:cc00::1;
+      205.251.195.204;
+      2600:9000:5306:5b00::1;
+      205.251.198.91;
+    };
+    forward only;
+  };
+
+  zone "clearurls.xyz" {
+    type forward;
+    forwarders {
+      2610:a1:1024::200;
+      156.154.132.200;
+    };
+    forward only;
+  };
+
+  zone "digicert.com" {
+    type forward;
+    forwarders {
+      2600:1800:10::1;
+      208.94.148.4;
+      2600:1801:11::1;
+      208.80.124.4;
+      2600:1802:12::1;
+      208.80.126.4;
+      2600:1801:13::1;
+      208.80.125.4;
+      2600:1802:14::1;
+      208.80.127.4;
+      2600:1800:15::1;
+      208.94.149.4;
+    };
+    forward only;
+  };
+
+  zone "thawte.com" {
+    type forward;
+    forwarders {
+      2600:1800:10::1;
+      208.94.148.4;
+      2600:1801:11::1;
+      208.80.124.4;
+      2600:1802:12::1;
+      208.80.126.4;
+      2600:1801:13::1;
+      208.80.125.4;
+      2600:1802:14::1;
+      208.80.127.4;
+      2600:1800:15::1;
+      208.94.149.4;
+    };
+    forward only;
+  };
+
+  zone "entrust.net" {
+    type forward;
+    forwarders {
+      2600:1480:800::43;
+      2.22.230.67;
+      2600:1406:32::40;
+      23.61.199.64;
+    };
+    forward only;
+  };
+
+  zone "sectigo.com" {
+    type forward;
+    forwarders {
+      2a0e:ac00:c7:d432::5bc7:d432;
+      91.199.212.50;
+      2a0e:ac00:d1:c432::5bd1:c432;
+      91.209.196.50;
+      2a0e:ac00:d4:c32::5bd4:c32;
+      91.212.12.50;
+    };
+    forward only;
+  };
+*/
+zone "domain.tld" {
+    type master;
+    file "/etc/bind/empty/domain.tld.zone";
+    forwarders {};
+    allow-query { query-localhost; };
+    allow-query-on { query-on-localhost; };
+    allow-transfer { transfer-localhost; };
+    allow-update { update-localhost; };
+    notify no;
+  };
+};
