@@ -9,7 +9,23 @@ server 127.0.0.1 {
   tcp-only yes;
 };
 
-// not working TLS validity issues
+server 10.254.254.1 {
+  edns yes;
+  tcp-only yes;
+};
+
+tls b-root-tls {
+  session-tickets no;
+  protocols { "TLSv1.3"; };
+  prefer-server-ciphers yes;
+  ciphers "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384";
+  dhparam-file "/etc/bind/tls/dhparam.pem";
+  remote-hostname "b.root-servers.net";
+  // openssl x509 -in /etc/bind/tls/b-root.crt -text
+  // openssl s_connect does not download complete chain
+  ca-file "/etc/bind/tls/b-root.crt";
+};
+
 tls cloudflare-tls {
   session-tickets no;
   protocols { "TLSv1.3"; };
@@ -18,11 +34,10 @@ tls cloudflare-tls {
   dhparam-file "/etc/bind/tls/dhparam.pem";
   remote-hostname "one.one.one.one";
   // openssl x509 -in /etc/bind/tls/cloudflare.crt -text
-  // openssl s_client -connect 1.1.1.1:853 -servername 1.1.1.1 -showcerts | sed -n '/BEGIN CERTIFICATE/,/END CERTIFICATE/p' > /etc/bind/tls/cloudflare.crt
-  ca-file "/etc/bind/tls/cloudflare.crt";
+  // openssl s_connect does not download complete chain
+  //ca-file "/etc/bind/tls/cloudflare.crt";
 };
 
-// not working TLS validity issues
 tls quad9-tls {
   session-tickets no;
   protocols { "TLSv1.3"; };
@@ -31,11 +46,11 @@ tls quad9-tls {
   dhparam-file "/etc/bind/tls/dhparam.pem";
   remote-hostname "dns11.quad9.net";
   // openssl x509 -in /etc/bind/tls/quad9.crt -text
-  // openssl s_client -connect 9.9.9.11:853 -servername 9.9.9.11 -showcerts | sed -n '/BEGIN CERTIFICATE/,/END CERTIFICATE/p' > /etc/bind/tls/quad9.crt
-  ca-file "/etc/bind/tls/quad9.crt";
+  // openssl s_connect does not download complete chain
+  //ca-file "/etc/bind/tls/quad9.crt";
 };
 
-// working as expected, opendns no support for DNSSEC
+// working as expected, opendns does not support DNSSEC
 tls opendns-tls {
   session-tickets no;
   protocols { "TLSv1.3"; };
@@ -44,6 +59,7 @@ tls opendns-tls {
   dhparam-file "/etc/bind/tls/dhparam.pem";
   remote-hostname "dns.opendns.com";
   // openssl x509 -in /etc/bind/tls/opendns.crt -text
+  // openssl s_client is sufficient
   // openssl s_client -connect 208.67.222.222:853 -servername 208.67.222.222 -showcerts | sed -n '/BEGIN CERTIFICATE/,/END CERTIFICATE/p' > /etc/bind/tls/opendns.crt
   ca-file "/etc/bind/tls/opendns.crt";
 };
@@ -114,6 +130,7 @@ options {
   blackhole {
     !localhost_ipv6;
     !localhost_ipv4;
+    !wg-vie_ipv4_lan;
     224.0.0.0/4;
     240.0.0.0/4;
     0.0.0.0/8;
