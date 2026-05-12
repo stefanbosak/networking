@@ -1,0 +1,14 @@
+$TTL	1D
+$ORIGIN hostname.as112.arpa.
+@							IN	SOA	localhost. . (
+										2021022401	; serial
+										30m		; refresh
+										15m		; retry
+										1W		; expiry
+										1D		; minimum
+									)
+								NS		localhost.
+                                TXT     "See http://as112.net/ for more information.";
+                                LOC	49 12 41.800 N 18 53 00.400 E -2.00m 0.00m 10000m 10m
+								A		127.0.0.1
+*								A		127.0.0.1

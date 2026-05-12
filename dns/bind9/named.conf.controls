@@ -1,0 +1,4 @@
+controls {
+  inet ::1 port 953 allow { localhost_ipv6; } keys { "rndc-key"; };
+  inet 127.0.0.1 port 953 allow { localhost_ipv4; } keys { "rndc-key"; };
+};

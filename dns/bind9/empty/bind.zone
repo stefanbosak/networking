@@ -1,0 +1,13 @@
+$TTL 1D
+$ORIGIN bind.
+@ CHAOS SOA localhost. . (
+                         2021022401 ; serial
+                         30m        ; refresh
+                         15m        ; retry
+                         1W         ; expiry
+                         1D         ; minimum
+                         ) 
+@                CHAOS  NS  localhost.
+version.bind.    CHAOS  TXT "version"
+authors.bind.    CHAOS  TXT "authors"
+hostname.bind.   CHAOS  TXT "localhost"

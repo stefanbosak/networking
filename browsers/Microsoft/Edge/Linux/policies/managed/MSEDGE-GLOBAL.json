@@ -1,0 +1,23 @@
+{
+"SearchSuggestEnabled": false,
+"SSLVersionMin": "tls1.2",
+"PasswordManagerEnabled": false,
+"ProxySettings": { "ProxyMode": "direct" },
+"ClearCachedImagesAndFilesOnExit": true,
+"ClearBrowsingDataOnExit": true,
+"SyncDisabled": false,
+"SavingBrowserHistoryDisabled": true,
+"DisableScreenshots": true,
+"ConfigureDoNotTrack": true,
+"InPrivateModeAvailability": 0,
+"AudioCaptureAllowed": false,
+"ScreenCaptureAllowed": false,
+"VideoCaptureAllowed": false,
+"WebCaptureEnabled": false,
+"SpeechRecognitionEnabled": false,
+"TranslateEnabled": false,
+"PrintingEnabled": false,
+"UserFeedbackAllowed": false,
+"DnsOverHttpsMode": "secure",
+"DnsOverHttpsTemplates": "https://doh.domain.tld:8443/dns-query{?dns}"
+}

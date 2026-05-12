@@ -1,0 +1,16 @@
+$TTL	1D
+$ORIGIN domain.tld.
+@							IN	SOA	localhost. . (
+										2023121501	; serial
+										30m		; refresh
+										15m		; retry
+										1W		; expiry
+										1D		; minimum
+									)
+									NS		localhost.
+                                                                        CAA             0 issue "letsencrypt.org"
+									A		127.0.0.1
+									AAAA		::1
+doh									AAAA		::1
+doh									A		127.0.0.1
+doh									HTTPS		1 . no-default-alpn alpn="h3"

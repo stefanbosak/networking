@@ -1,0 +1,59 @@
+acl "query-chaos" {
+  localhost_ipv6;
+  localhost_ipv4;
+};
+
+acl "query-on-chaos" {
+  localhost_ipv6;
+  localhost_ipv4;
+};
+
+view "chaos" chaos {
+  match-clients { query-chaos; };
+  match-destinations {
+    localhost_ipv6;
+    localhost_ipv4;
+  };
+
+  recursion no;
+  match-recursive-only no;
+
+  servfail-ttl 0;
+  max-cache-ttl 60;
+  max-ncache-ttl 60;
+  max-cache-size 512m;
+  minimal-any yes;
+  minimal-responses yes;
+  qname-minimization relaxed;
+  ixfr-from-differences yes;
+  provide-ixfr yes;
+  transfer-format many-answers;
+  zone-statistics no;
+
+  allow-query { query-chaos; };
+  allow-query-on { query-on-chaos; };
+  allow-query-cache { query-chaos; };
+  allow-query-cache-on { query-on-chaos; };
+  allow-recursion { none; };
+  allow-recursion-on { none; };
+  allow-notify { none; };
+  allow-transfer { none; };
+  allow-update { none; };
+  allow-update-forwarding { none; };
+ 
+  zone "." {
+    type hint;
+    file "/dev/null";
+  };
+  
+  zone "bind" {
+    type master;
+    file "/etc/bind/empty/bind.zone";
+    forwarders {};
+    allow-query { query-chaos; };
+    allow-query-on { query-on-chaos; };
+    allow-transfer { none; };
+    allow-update { none; };
+    notify no;
+  };  
+};

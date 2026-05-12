@@ -1,0 +1,11 @@
+$TTL	1D
+$ORIGIN home.arpa.
+@							IN	SOA	localhost. . (
+										2021022401	; serial
+										30m		; refresh
+										15m		; retry
+										1W		; expiry
+										1D		; minimum
+									)
+									NS		localhost.
+									A		127.0.0.1
